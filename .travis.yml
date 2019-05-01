@@ -1,5 +1,6 @@
 language: go
 go: 1.12
+sudo: false
 
 # workarround to successful build a forked version (import path set to the github.com/gtalent/tendb)
 before_install:
