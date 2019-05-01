@@ -6,3 +6,10 @@ pg-cli:
 	docker exec -ti tendb-postgres psql -h localhost -U postgres -d tendb
 generate:
 	go generate github.com/gtalent/tendb/db
+generate-models:
+	genna -c "postgres://postgres:postgres@localhost:5432/tendb?sslmode=disable" -o db/generated_models.go -p db
+	chmod -x db/generated_models.go
+install-deps:
+	go get github.com/gtalent/tendb/exec
+	go get github.com/gtalent/tendb/assets_generate
+	go get github.com/dizzyfool/genna
