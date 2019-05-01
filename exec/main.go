@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 gtalent2@gmail.com
+   Copyright 2017 - 2019 gtalent2@gmail.com
 
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,13 +13,13 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"gopkg.in/codegangsta/cli.v1"
-	"gopkg.in/jinzhu/gorm.v1"
 
 	"github.com/gtalent/tendb/churchdirectory"
-	"github.com/gtalent/tendb/importers"
-	"github.com/gtalent/tendb/users"
+	"github.com/gtalent/tendb/db"
+	//"github.com/gtalent/tendb/importers"
+	//"github.com/gtalent/tendb/users"
+	"github.com/go-pg/pg"
 )
 
 func home() string {
@@ -31,16 +31,15 @@ func home() string {
 	return h
 }
 
-func openDatabase() (*gorm.DB, error) {
-	return gorm.Open("postgres", "host=localhost user=postgres dbname=tendb sslmode=disable password=postgres")
+func openDatabase() *pg.DB {
+	return pg.Connect(&pg.Options{
+		User:     "postgres",
+		Password: "postgres",
+		Database: "tendb",
+	})
 }
 
 func serve(c *cli.Context) error {
-	_, err := openDatabase()
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
 	s := &http.Server{
 		Addr: "0.0.0.0:3000",
 	}
@@ -49,35 +48,31 @@ func serve(c *cli.Context) error {
 }
 
 func migrate(c *cli.Context) error {
-	db, err := openDatabase()
+	conn := openDatabase()
+	defer conn.Close()
+	err := db.Migrate(conn)
 	if err != nil {
 		fmt.Println(err)
-		return err
 	}
-	users.Migrate(db)
-	churchdirectory.Migrate(db)
 	return nil
 }
 
 func importSK(c *cli.Context) error {
-	db, err := openDatabase()
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	path := c.String("path")
-	err = importers.ImportSK(db, path)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return err
+	//db := openDatabase()
+	//defer conn.Close()
+	//path := c.String("path")
+	//err = importers.ImportSK(db, path)
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	//return err
+	return nil
 }
 
 func main() {
-	churchdirectory.LsAssets()
 	app := cli.NewApp()
 	app.Name = "tendb"
-	app.Usage = "Gary's Church Database"
+	app.Usage = "10db Church Database"
 
 	app.Commands = []cli.Command{
 		{

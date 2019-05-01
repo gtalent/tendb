@@ -1,70 +1,44 @@
+/*
+   Copyright 2017 - 2019 gtalent2@gmail.com
+
+   This Source Code Form is subject to the terms of the Mozilla Public
+   License, v. 2.0. If a copy of the MPL was not distributed with this
+   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+*/
 package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/shurcooL/vfsgen"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"io"
+	"strings"
 )
 
 const tmpl = `
 package PKG_NAME
 
 import (
-	"io"
-	"net/http"
-	"strconv"
-
 	"github.com/go-pg/migrations"
 )
 
-func ls(assets http.FileSystem) ([]string, error) {
-	dir, err := assets.Open("/")
-	if err != nil {
-		return nil, err
-	}
-	list, err := dir.Readdir(-1)
-	if err != nil {
-		return nil, err
-	}
-	var out []string
-	for _, f := range list {
-		println(f.Name())
-		out = append(out, f.Name())
-	}
-	return out, nil
-}
-
-func loadMigrationFile(path string) (string, error) {
-	file, err := assets.Open(path)
-	if err != nil {
-		return "", err
-	}
-	buff := make([]byte, 0)
-	_, err = io.ReadFull(file, buff)
-	if err != nil {
-		return "", err
-	}
-	return string(buff), nil
-}
-
 func init() {
+	const dir = "DIR"
 	migrations.MustRegisterTx(func(db migrations.DB) error {
-		path := strconv.Itoa(i) + "_init.tx.up.sql"
+		path := dir + "/up.sql"
 		sql, err := loadMigrationFile(path)
 		if err != nil {
-			loop = false
 			return err
 		}
 		_, err = db.Exec(sql)
 		return err
 	}, func(db migrations.DB) error {
-		path := strconv.Itoa(i) + ".tx.down.sql"
+		path := dir + "/down.sql"
 		sql, err := loadMigrationFile(path)
 		if err != nil {
-			loop = false
 			return err
 		}
 		_, err = db.Exec(sql)
@@ -99,5 +73,17 @@ func main() {
 	})
 	if err != nil {
 		log.Fatalln(err)
+	}
+
+	// generate migration files
+	dirs, err := ls(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for i, dir := range dirs {
+		out := strings.Replace(tmpl, "DIR", dir, 1)
+		out = strings.Replace(out, "PKG_NAME", pkg, 1)
+		fn := fmt.Sprintf("%02d", i+1) + "_migration.go"
+		ioutil.WriteFile(fn, []byte(out), 0644)
 	}
 }

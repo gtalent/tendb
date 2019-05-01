@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 gtalent2@gmail.com
+   Copyright 2017 - 2019 gtalent2@gmail.com
 
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gtalent/tendb"
+	"github.com/gtalent/tendb/db"
 )
 
 func SetupViews(prefix string, s *http.Server) {
@@ -37,12 +37,12 @@ func directoryPage(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//ms := rqst.MembershipStatus
-	var eventBaptism EventType
-	db, err := tendb.OpenDatabase()
+	var eventBaptism db.EventType
+	conn, err := db.OpenDatabase()
 	if err != nil {
 		return
 	}
-	db.Where("member = ?", EventBaptism).First(&eventBaptism)
+	conn.Where("member = ?", db.EventBaptism).First(&eventBaptism)
 	//	filt = _build_membership_filter(ms)
 	//	people := Person.objects.filter(filt).order_by('last_name', 'first_name')
 	//	try:
