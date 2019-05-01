@@ -9,7 +9,7 @@ before_install:
   - cd $HOME/gopath/src/github.com/gtalent/tendb
 
 install:
-  - go get
+  - go get github.com/gtalent/tendb/exec
 
 script:
   - make generate build
