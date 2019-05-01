@@ -1,0 +1,15 @@
+language: go
+go: 1.12
+
+# workarround to successful build a forked version (import path set to the github.com/gtalent/tendb)
+before_install:
+  - mkdir -p $HOME/gopath/src/github.com/gtalent/tendb
+  - rsync -az ${TRAVIS_BUILD_DIR}/ $HOME/gopath/src/github.com/gtalent/tendb/
+  - export TRAVIS_BUILD_DIR=$HOME/gopath/src/github.com/gtalent/tendb
+  - cd $HOME/gopath/src/github.com/gtalent/tendb
+
+install:
+  - go get
+
+script:
+  - make generate build
