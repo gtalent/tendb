@@ -11,6 +11,7 @@ package db
 import (
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/jinzhu/gorm.v1"
 )
 
@@ -39,6 +40,26 @@ var DefaultEventTypes = []string{
 
 var DefaultClearanceTypes = []string{
 	ClearanceBackgroundCheck,
+}
+
+// User model to store a user in the database.
+type User struct {
+	gorm.Model
+	EmailAddress string `gorm:"size:75"`
+	PasswordHash []byte `gorm:"size:75"`
+}
+
+/*
+SetPassword hashes and sets the user password.
+Returns error if there was an error.
+*/
+func (u *User) SetPassword(pw string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	u.PasswordHash = hash
+	return nil
 }
 
 type ClearanceType struct {
