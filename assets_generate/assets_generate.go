@@ -10,12 +10,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/shurcooL/vfsgen"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/shurcooL/vfsgen"
 )
 
 const tmpl = `

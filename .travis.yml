@@ -1,6 +1,5 @@
 language: go
 go: 1.12
-sudo: false
 
 # workarround to successful build a forked version (import path set to the github.com/gtalent/tendb)
 before_install:
@@ -11,6 +10,7 @@ before_install:
 
 install:
   - go get github.com/gtalent/tendb/exec
+  - go get github.com/gtalent/tendb/assets_generate
 
 script:
   - make generate build
