@@ -34,6 +34,13 @@ func loadMigrationFile(path string) (string, error) {
 // Migrate performs the database migrations needed by this package.
 func Migrate(db *pg.DB) error {
 	_, _, err := migrations.Run(db, "init")
+	_, _, err = migrations.Run(db, "reset")
+	if err != nil {
+		return err
+	}
 	_, _, err = migrations.Run(db, "up")
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }

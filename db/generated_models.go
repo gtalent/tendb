@@ -11,13 +11,13 @@ var Columns = struct {
 		ID, Builtin, CreatedAt, DeletedAt, Duration, Name, UpdatedAt string
 	}
 	Clearance struct {
-		ID, ClearanceTypeRefer, CreatedAt, Date, DeletedAt, UpdatedAt string
+		ID, ClearanceTypeRefer, CreatedAt, Date, DeletedAt, PersonRefer, UpdatedAt string
 	}
 	EventType struct {
 		ID, Builtin, CreatedAt, DeletedAt, Name, UpdatedAt string
 	}
 	Event struct {
-		ID, CreatedAt, Date, DeletedAt, EventTypeRefer, UpdatedAt string
+		ID, CreatedAt, Date, DeletedAt, EventTypeRefer, PersonRefer, UpdatedAt string
 	}
 	GopgMigration struct {
 		CreatedAt, ID, Version string
@@ -29,7 +29,7 @@ var Columns = struct {
 		ID, AddressLine1, AddressLine2, Birthday, CellPhone, City, CreatedAt, DeletedAt, EmailAddress, FirstName, HomePhone, Homebound, LastName, Married, Member, MiddleName, Notes, OutOfArea, PicturePath, Province, Sex, Suffix, UpdatedAt, ZipCode string
 	}
 	RoleAssignment struct {
-		ID, CreatedAt, DeletedAt, EndDate, RoleRefer, StartDate, UpdatedAt string
+		ID, CreatedAt, DeletedAt, EndDate, PersonRefer, RoleRefer, StartDate, UpdatedAt string
 	}
 	Role struct {
 		ID, CreatedAt, DeletedAt, Name, UpdatedAt string
@@ -50,13 +50,14 @@ var Columns = struct {
 		UpdatedAt: "updated_at",
 	},
 	Clearance: struct {
-		ID, ClearanceTypeRefer, CreatedAt, Date, DeletedAt, UpdatedAt string
+		ID, ClearanceTypeRefer, CreatedAt, Date, DeletedAt, PersonRefer, UpdatedAt string
 	}{
 		ID:                 "id",
 		ClearanceTypeRefer: "clearance_type_refer",
 		CreatedAt:          "created_at",
 		Date:               "date",
 		DeletedAt:          "deleted_at",
+		PersonRefer:        "person_refer",
 		UpdatedAt:          "updated_at",
 	},
 	EventType: struct {
@@ -70,13 +71,14 @@ var Columns = struct {
 		UpdatedAt: "updated_at",
 	},
 	Event: struct {
-		ID, CreatedAt, Date, DeletedAt, EventTypeRefer, UpdatedAt string
+		ID, CreatedAt, Date, DeletedAt, EventTypeRefer, PersonRefer, UpdatedAt string
 	}{
 		ID:             "id",
 		CreatedAt:      "created_at",
 		Date:           "date",
 		DeletedAt:      "deleted_at",
 		EventTypeRefer: "event_type_refer",
+		PersonRefer:    "person_refer",
 		UpdatedAt:      "updated_at",
 	},
 	GopgMigration: struct {
@@ -125,15 +127,16 @@ var Columns = struct {
 		ZipCode:      "zip_code",
 	},
 	RoleAssignment: struct {
-		ID, CreatedAt, DeletedAt, EndDate, RoleRefer, StartDate, UpdatedAt string
+		ID, CreatedAt, DeletedAt, EndDate, PersonRefer, RoleRefer, StartDate, UpdatedAt string
 	}{
-		ID:        "id",
-		CreatedAt: "created_at",
-		DeletedAt: "deleted_at",
-		EndDate:   "end_date",
-		RoleRefer: "role_refer",
-		StartDate: "start_date",
-		UpdatedAt: "updated_at",
+		ID:          "id",
+		CreatedAt:   "created_at",
+		DeletedAt:   "deleted_at",
+		EndDate:     "end_date",
+		PersonRefer: "person_refer",
+		RoleRefer:   "role_refer",
+		StartDate:   "start_date",
+		UpdatedAt:   "updated_at",
 	},
 	Role: struct {
 		ID, CreatedAt, DeletedAt, Name, UpdatedAt string
@@ -255,7 +258,7 @@ var Tables = struct {
 type ClearanceType struct {
 	tableName struct{} `sql:"clearance_types,alias:t" pg:",discard_unknown_columns"`
 
-	ID        int         `sql:"id,pk"`
+	ID        int64       `sql:"id,pk"`
 	Builtin   bool        `sql:"builtin,notnull"`
 	CreatedAt pg.NullTime `sql:"created_at"`
 	DeletedAt pg.NullTime `sql:"deleted_at"`
@@ -267,18 +270,19 @@ type ClearanceType struct {
 type Clearance struct {
 	tableName struct{} `sql:"clearances,alias:t" pg:",discard_unknown_columns"`
 
-	ID                 int         `sql:"id,pk"`
+	ID                 int64       `sql:"id,pk"`
 	ClearanceTypeRefer int64       `sql:"clearance_type_refer,notnull"`
 	CreatedAt          pg.NullTime `sql:"created_at"`
 	Date               pg.NullTime `sql:"date"`
 	DeletedAt          pg.NullTime `sql:"deleted_at"`
+	PersonRefer        int64       `sql:"person_refer,notnull"`
 	UpdatedAt          pg.NullTime `sql:"updated_at"`
 }
 
 type EventType struct {
 	tableName struct{} `sql:"event_types,alias:t" pg:",discard_unknown_columns"`
 
-	ID        int         `sql:"id,pk"`
+	ID        int64       `sql:"id,pk"`
 	Builtin   bool        `sql:"builtin,notnull"`
 	CreatedAt pg.NullTime `sql:"created_at"`
 	DeletedAt pg.NullTime `sql:"deleted_at"`
@@ -289,11 +293,12 @@ type EventType struct {
 type Event struct {
 	tableName struct{} `sql:"events,alias:t" pg:",discard_unknown_columns"`
 
-	ID             int         `sql:"id,pk"`
+	ID             int64       `sql:"id,pk"`
 	CreatedAt      pg.NullTime `sql:"created_at"`
 	Date           time.Time   `sql:"date,notnull"`
 	DeletedAt      pg.NullTime `sql:"deleted_at"`
 	EventTypeRefer int64       `sql:"event_type_refer,notnull"`
+	PersonRefer    int64       `sql:"person_refer,notnull"`
 	UpdatedAt      pg.NullTime `sql:"updated_at"`
 }
 
@@ -308,7 +313,7 @@ type GopgMigration struct {
 type ParentChildRelationship struct {
 	tableName struct{} `sql:"parent_child_relationships,alias:t" pg:",discard_unknown_columns"`
 
-	ID          int         `sql:"id,pk"`
+	ID          int64       `sql:"id,pk"`
 	ChildRefer  int64       `sql:"child_refer,notnull"`
 	CreatedAt   pg.NullTime `sql:"created_at"`
 	DeletedAt   pg.NullTime `sql:"deleted_at"`
@@ -319,7 +324,7 @@ type ParentChildRelationship struct {
 type Person struct {
 	tableName struct{} `sql:"people,alias:t" pg:",discard_unknown_columns"`
 
-	ID           int         `sql:"id,pk"`
+	ID           int64       `sql:"id,pk"`
 	AddressLine1 *string     `sql:"address_line1"`
 	AddressLine2 *string     `sql:"address_line2"`
 	Birthday     pg.NullTime `sql:"birthday"`
@@ -339,7 +344,7 @@ type Person struct {
 	OutOfArea    *bool       `sql:"out_of_area"`
 	PicturePath  *string     `sql:"picture_path"`
 	Province     *string     `sql:"province"`
-	Sex          *int        `sql:"sex"`
+	Sex          int         `sql:"sex,notnull"`
 	Suffix       *string     `sql:"suffix"`
 	UpdatedAt    pg.NullTime `sql:"updated_at"`
 	ZipCode      *string     `sql:"zip_code"`
@@ -348,19 +353,20 @@ type Person struct {
 type RoleAssignment struct {
 	tableName struct{} `sql:"role_assignments,alias:t" pg:",discard_unknown_columns"`
 
-	ID        int         `sql:"id,pk"`
-	CreatedAt pg.NullTime `sql:"created_at"`
-	DeletedAt pg.NullTime `sql:"deleted_at"`
-	EndDate   pg.NullTime `sql:"end_date"`
-	RoleRefer *int64      `sql:"role_refer"`
-	StartDate pg.NullTime `sql:"start_date"`
-	UpdatedAt pg.NullTime `sql:"updated_at"`
+	ID          int64       `sql:"id,pk"`
+	CreatedAt   pg.NullTime `sql:"created_at"`
+	DeletedAt   pg.NullTime `sql:"deleted_at"`
+	EndDate     pg.NullTime `sql:"end_date"`
+	PersonRefer int64       `sql:"person_refer,notnull"`
+	RoleRefer   int64       `sql:"role_refer,notnull"`
+	StartDate   pg.NullTime `sql:"start_date"`
+	UpdatedAt   pg.NullTime `sql:"updated_at"`
 }
 
 type Role struct {
 	tableName struct{} `sql:"roles,alias:t" pg:",discard_unknown_columns"`
 
-	ID        int         `sql:"id,pk"`
+	ID        int64       `sql:"id,pk"`
 	CreatedAt pg.NullTime `sql:"created_at"`
 	DeletedAt pg.NullTime `sql:"deleted_at"`
 	Name      string      `sql:"name,notnull"`
@@ -370,7 +376,7 @@ type Role struct {
 type User struct {
 	tableName struct{} `sql:"users,alias:t" pg:",discard_unknown_columns"`
 
-	ID           int         `sql:"id,pk"`
+	ID           int64       `sql:"id,pk"`
 	CreatedAt    pg.NullTime `sql:"created_at"`
 	DeletedAt    pg.NullTime `sql:"deleted_at"`
 	EmailAddress string      `sql:"email_address,notnull"`

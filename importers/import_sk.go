@@ -16,14 +16,14 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/jinzhu/gorm.v1"
-
+	"github.com/go-pg/pg"
 	"github.com/gtalent/tendb/db"
 )
 
 var genderKey = map[string]int{
-	"Female": 0,
-	"Male":   0,
+	"Unknown": db.Unknown,
+	"Female":  db.Female,
+	"Male":    db.Male,
 }
 
 type family struct {
@@ -54,18 +54,18 @@ func parseDate(d string) *time.Time {
 	return &t
 }
 
-func cleanPhoneNumber(n string) string {
+func cleanPhoneNumber(n string) *string {
 	out := ""
 	for _, v := range n {
 		if v <= '0' && v >= '9' {
 			out += string(v)
 		}
 	}
-	return out
+	return &out
 }
 
 // ImportSK imports a Servant Keeper data directory.
-func ImportSK(conn *gorm.DB, path string) error {
+func ImportSK(conn *pg.DB, path string) error {
 	// load CSV data
 	f, err := os.Open(path + "/sk.csv")
 	if err != nil {
@@ -108,11 +108,11 @@ func ImportSK(conn *gorm.DB, path string) error {
 	var eventLeftChurch db.EventType
 	var eventWedding db.EventType
 	var clearanceBackgroundCheck db.ClearanceType
-	conn.Where("name = ?", db.EventBaptism).First(&eventBaptism)
-	conn.Where("name = ?", db.EventDeath).First(&eventDeath)
-	conn.Where("name = ?", db.EventLeftChurch).First(&eventLeftChurch)
-	conn.Where("name = ?", db.EventWedding).First(&eventWedding)
-	conn.Where("name = ?", db.ClearanceBackgroundCheck).First(&clearanceBackgroundCheck)
+	//conn.Model(&eventBaptism).Where("name = ?", db.EventBaptism).Select()
+	//conn.Model(&eventDeath).Where("name = ?", db.EventDeath).Select()
+	//conn.Model(&eventLeftChurch).Where("name = ?", db.EventLeftChurch).Select()
+	//conn.Model(&eventWedding).Where("name = ?", db.EventWedding).Select()
+	//conn.Model(&clearanceBackgroundCheck).Where("name = ?", db.ClearanceBackgroundCheck).Select()
 
 	families := make(map[string]*family)
 	i := 0
@@ -126,20 +126,20 @@ func ImportSK(conn *gorm.DB, path string) error {
 		i++
 		p := new(db.Person)
 		p.FirstName = rec[FirstName]
-		p.MiddleName = rec[MiddleName]
+		p.MiddleName = &rec[MiddleName]
 		p.LastName = rec[LastName]
-		p.Suffix = rec[Suffix]
+		p.Suffix = &rec[Suffix]
 		p.Married = rec[MaritalStatus] == "Married"
 		p.HomePhone = cleanPhoneNumber(rec[HomePhone])
 		p.CellPhone = cleanPhoneNumber(rec[CellPhone])
-		p.EmailAddress = rec[Email]
-		p.AddressLine1 = rec[AddressLine1]
-		p.AddressLine2 = rec[AddressLine2]
-		p.ZipCode = rec[ZipCode]
-		p.City = rec[City]
-		p.Province = rec[State]
+		p.EmailAddress = &rec[Email]
+		p.AddressLine1 = &rec[AddressLine1]
+		p.AddressLine2 = &rec[AddressLine2]
+		p.ZipCode = &rec[ZipCode]
+		p.City = &rec[City]
+		p.Province = &rec[State]
 		p.Member = member(rec[MemberStatus])
-		p.Birthday = parseDate(rec[BirthDate])
+		p.Birthday = pg.NullTime{Time: *parseDate(rec[BirthDate])}
 		p.Sex = genderKey[rec[Gender]]
 		dirName := rec[DirectoryName]
 		rel := rec[Relationship]
@@ -159,39 +159,46 @@ func ImportSK(conn *gorm.DB, path string) error {
 		case "Daughter", "Son":
 			fam.children = append(fam.children, p)
 		}
-		conn.Create(&p)
+		conn.Insert(&p)
 
 		// setup events
 		if d := parseDate(rec[BaptizedDate]); d != nil {
-			e := db.Event{EventType: eventBaptism, Person: *p, Date: *d}
-			conn.Create(&e)
+			e := db.Event{EventTypeRefer: eventBaptism.ID, PersonRefer: p.ID, Date: *d}
+			conn.Insert(&e)
 		}
 		if d := parseDate(rec[DeceasedDate]); d != nil {
-			e := db.Event{EventType: eventDeath, Person: *p, Date: *d}
-			conn.Create(&e)
+			e := db.Event{EventTypeRefer: eventDeath.ID, PersonRefer: p.ID, Date: *d}
+			conn.Insert(&e)
 		}
 		if d := parseDate(rec[DateRemoved]); d != nil {
-			e := db.Event{EventType: eventLeftChurch, Person: *p, Date: *d}
-			conn.Create(&e)
+			e := db.Event{EventTypeRefer: eventLeftChurch.ID, PersonRefer: p.ID, Date: *d}
+			conn.Insert(&e)
 		}
 		if d := parseDate(rec[WeddingDate]); d != nil {
-			e := db.Event{EventType: eventWedding, Person: *p, Date: *d}
-			conn.Create(&e)
+			e := db.Event{EventTypeRefer: eventWedding.ID, PersonRefer: p.ID, Date: *d}
+			conn.Insert(&e)
 		}
 
 		// set up background check
 		if d := parseDate(rec[BackgroundCheck]); d != nil {
-			e := db.Clearance{ClearanceType: clearanceBackgroundCheck, Person: *p, Date: *d}
-			conn.Create(&e)
+			e := db.Clearance{ClearanceTypeRefer: int64(clearanceBackgroundCheck.ID), PersonRefer: int64(p.ID), Date: pg.NullTime{Time: *d}}
+			conn.Insert(&e)
 		}
 
 		// setup roles
 		roles := strings.Split(rec[Leadership], "; ")
 		for _, v := range roles {
-			var r = db.Role{Name: v}
-			conn.FirstOrCreate(&r, r)
-			ra := db.RoleAssignment{Person: *p, Role: r}
-			conn.Create(&ra)
+			r := db.Role{Name: v}
+			_, err = conn.Model(r).
+				Column("id").
+				Where("name = ?name").
+				Returning("id").
+				SelectOrInsert()
+			if err != nil {
+				return err
+			}
+			ra := db.RoleAssignment{PersonRefer: p.ID, RoleRefer: r.ID}
+			conn.Insert(&ra)
 		}
 	}
 	println("\r" + strconv.Itoa(i))
@@ -203,12 +210,12 @@ func ImportSK(conn *gorm.DB, path string) error {
 		f = families[k]
 		for _, c := range f.children {
 			if f.father != nil {
-				fc := db.ParentChildRelationship{Parent: *f.father, Child: *c}
-				conn.Create(&fc)
+				fc := db.ParentChildRelationship{ParentRefer: f.father.ID, ChildRefer: c.ID}
+				conn.Insert(&fc)
 			}
 			if f.mother != nil {
-				mc := db.ParentChildRelationship{Parent: *f.mother, Child: *c}
-				conn.Create(&mc)
+				mc := db.ParentChildRelationship{ParentRefer: f.mother.ID, ChildRefer: c.ID}
+				conn.Insert(&mc)
 			}
 			if i%50 == 0 {
 				print(statusPrefix + strconv.Itoa(i))

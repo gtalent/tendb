@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	Female = 0
-	Male   = 1
+	Unknown = 0
+	Female  = 1
+	Male    = 2
 )
 
 const (

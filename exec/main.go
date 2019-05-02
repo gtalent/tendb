@@ -17,19 +17,9 @@ import (
 
 	"github.com/gtalent/tendb/churchdirectory"
 	"github.com/gtalent/tendb/db"
-	//"github.com/gtalent/tendb/importers"
-	//"github.com/gtalent/tendb/users"
+	"github.com/gtalent/tendb/importers"
 	"github.com/go-pg/pg"
 )
-
-func home() string {
-	h := os.Getenv("GCDB_HOME")
-	if h == "" {
-		h = "."
-	}
-	h += "/"
-	return h
-}
 
 func openDatabase() *pg.DB {
 	return pg.Connect(&pg.Options{
@@ -58,20 +48,19 @@ func migrate(c *cli.Context) error {
 }
 
 func importSK(c *cli.Context) error {
-	//db := openDatabase()
-	//defer conn.Close()
-	//path := c.String("path")
-	//err = importers.ImportSK(db, path)
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-	//return err
-	return nil
+	conn := openDatabase()
+	defer conn.Close()
+	path := c.String("path")
+	err := importers.ImportSK(conn, path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return err
 }
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "tendb"
+	app.Name = "10db"
 	app.Usage = "10db Church Database"
 
 	app.Commands = []cli.Command{

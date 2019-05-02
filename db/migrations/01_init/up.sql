@@ -10,7 +10,7 @@
 --
 
 CREATE TABLE public.clearance_types (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
@@ -27,7 +27,7 @@ ALTER TABLE public.clearance_types OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.clearance_types_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -49,11 +49,12 @@ ALTER SEQUENCE public.clearance_types_id_seq OWNED BY public.clearance_types.id;
 --
 
 CREATE TABLE public.clearances (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
     clearance_type_refer bigint NOT NULL,
+    person_refer bigint NOT NULL,
     date timestamp with time zone
 );
 
@@ -65,7 +66,7 @@ ALTER TABLE public.clearances OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.clearances_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -87,7 +88,7 @@ ALTER SEQUENCE public.clearances_id_seq OWNED BY public.clearances.id;
 --
 
 CREATE TABLE public.event_types (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
@@ -103,7 +104,7 @@ ALTER TABLE public.event_types OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.event_types_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -125,10 +126,11 @@ ALTER SEQUENCE public.event_types_id_seq OWNED BY public.event_types.id;
 --
 
 CREATE TABLE public.events (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
+	 person_refer bigint NOT NULL,
     event_type_refer bigint NOT NULL,
     date timestamp with time zone NOT NULL
 );
@@ -141,7 +143,7 @@ ALTER TABLE public.events OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.events_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -163,7 +165,7 @@ ALTER SEQUENCE public.events_id_seq OWNED BY public.events.id;
 --
 
 CREATE TABLE public.parent_child_relationships (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
@@ -179,7 +181,7 @@ ALTER TABLE public.parent_child_relationships OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.parent_child_relationships_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -201,7 +203,7 @@ ALTER SEQUENCE public.parent_child_relationships_id_seq OWNED BY public.parent_c
 --
 
 CREATE TABLE public.people (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
@@ -210,7 +212,7 @@ CREATE TABLE public.people (
     last_name varchar(50) NOT NULL,
     suffix varchar(5),
     married boolean NOT NULL,
-    sex integer,
+    sex integer NOT NULL,
     birthday timestamp with time zone,
     home_phone varchar(10),
     cell_phone varchar(10),
@@ -235,7 +237,7 @@ ALTER TABLE public.people OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.people_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -257,11 +259,12 @@ ALTER SEQUENCE public.people_id_seq OWNED BY public.people.id;
 --
 
 CREATE TABLE public.role_assignments (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
-    role_refer bigint,
+    person_refer bigint NOT NULL,
+    role_refer bigint NOT NULL,
     start_date timestamp with time zone,
     end_date timestamp with time zone
 );
@@ -274,7 +277,7 @@ ALTER TABLE public.role_assignments OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.role_assignments_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -296,7 +299,7 @@ ALTER SEQUENCE public.role_assignments_id_seq OWNED BY public.role_assignments.i
 --
 
 CREATE TABLE public.roles (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
@@ -311,7 +314,7 @@ ALTER TABLE public.roles OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.roles_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -333,7 +336,7 @@ ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
 --
 
 CREATE TABLE public.users (
-    id integer NOT NULL PRIMARY KEY,
+    id bigint NOT NULL PRIMARY KEY,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
@@ -351,7 +354,7 @@ ALTER TABLE public.users OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.users_id_seq
-    AS integer
+    AS bigint
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
