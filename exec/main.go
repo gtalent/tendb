@@ -10,15 +10,15 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"os"
-
-	"gopkg.in/codegangsta/cli.v1"
-
+	"github.com/go-pg/pg"
 	"github.com/gtalent/tendb/churchdirectory"
 	"github.com/gtalent/tendb/db"
 	"github.com/gtalent/tendb/importers"
-	"github.com/go-pg/pg"
+	"golang.org/x/crypto/ssh/terminal"
+	"gopkg.in/codegangsta/cli.v1"
+	"net/http"
+	"os"
+	"syscall"
 )
 
 func openDatabase() *pg.DB {
@@ -44,6 +44,38 @@ func migrate(c *cli.Context) error {
 	if err != nil {
 		fmt.Println(err)
 	}
+	return nil
+}
+
+func createUser(c *cli.Context) error {
+	conn := openDatabase()
+	defer conn.Close()
+	var u db.User
+
+	u.EmailAddress = c.String("email")
+	u.FirstName = c.String("fn")
+	u.LastName = c.String("ln")
+
+	// get password from stdin
+	print("Password: ")
+	pw, err := terminal.ReadPassword(int(syscall.Stdin))
+	println()
+	if err != nil {
+		return err
+	}
+
+	err = u.SetPassword(pw)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	err = conn.Insert(&u)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	println("User " + u.EmailAddress + " created")
 	return nil
 }
 
@@ -84,8 +116,20 @@ func main() {
 					Name:  "s,superuser",
 					Usage: "Indicates whether or not the new user should be a superuser/admin",
 				},
+				cli.StringFlag{
+					Name:  "e,email",
+					Usage: "Email of account, which will also serve as the username",
+				},
+				cli.StringFlag{
+					Name:  "fn",
+					Usage: "First Name",
+				},
+				cli.StringFlag{
+					Name:  "ln",
+					Usage: "Last Name",
+				},
 			},
-			Action: func(c *cli.Context) {},
+			Action: createUser,
 		},
 		{
 			Name:  "import-sk",

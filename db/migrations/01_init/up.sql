@@ -337,9 +337,6 @@ ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
 
 CREATE TABLE public.users (
     id bigint NOT NULL PRIMARY KEY,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone,
     email_address varchar(75) NOT NULL UNIQUE,
     first_name varchar(75) NOT NULL,
     last_name varchar(75) NOT NULL,
@@ -560,13 +557,6 @@ CREATE INDEX idx_role_assignments_deleted_at ON public.role_assignments USING bt
 --
 
 CREATE INDEX idx_roles_deleted_at ON public.roles USING btree (deleted_at);
-
-
---
--- Name: idx_users_deleted_at; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_users_deleted_at ON public.users USING btree (deleted_at);
 
 
 --

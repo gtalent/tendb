@@ -35,7 +35,7 @@ var Columns = struct {
 		ID, CreatedAt, DeletedAt, Name, UpdatedAt string
 	}
 	User struct {
-		ID, CreatedAt, DeletedAt, EmailAddress, FirstName, LastName, PasswordHash, UpdatedAt string
+		ID, EmailAddress, FirstName, LastName, PasswordHash string
 	}
 }{
 	ClearanceType: struct {
@@ -148,16 +148,13 @@ var Columns = struct {
 		UpdatedAt: "updated_at",
 	},
 	User: struct {
-		ID, CreatedAt, DeletedAt, EmailAddress, FirstName, LastName, PasswordHash, UpdatedAt string
+		ID, EmailAddress, FirstName, LastName, PasswordHash string
 	}{
 		ID:           "id",
-		CreatedAt:    "created_at",
-		DeletedAt:    "deleted_at",
 		EmailAddress: "email_address",
 		FirstName:    "first_name",
 		LastName:     "last_name",
 		PasswordHash: "password_hash",
-		UpdatedAt:    "updated_at",
 	},
 }
 
@@ -376,12 +373,9 @@ type Role struct {
 type User struct {
 	tableName struct{} `sql:"users,alias:t" pg:",discard_unknown_columns"`
 
-	ID           int64       `sql:"id,pk"`
-	CreatedAt    pg.NullTime `sql:"created_at"`
-	DeletedAt    pg.NullTime `sql:"deleted_at"`
-	EmailAddress string      `sql:"email_address,notnull"`
-	FirstName    string      `sql:"first_name,notnull"`
-	LastName     string      `sql:"last_name,notnull"`
-	PasswordHash *[]byte     `sql:"password_hash"`
-	UpdatedAt    pg.NullTime `sql:"updated_at"`
+	ID           int64   `sql:"id,pk"`
+	EmailAddress string  `sql:"email_address,notnull"`
+	FirstName    string  `sql:"first_name,notnull"`
+	LastName     string  `sql:"last_name,notnull"`
+	PasswordHash *[]byte `sql:"password_hash"`
 }

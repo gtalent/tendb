@@ -44,8 +44,8 @@ var DefaultClearanceTypes = []string{
 SetPassword hashes and sets the user password.
 Returns error if there was an error.
 */
-func (u *User) SetPassword(pw string) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+func (u *User) SetPassword(pw []byte) error {
+	hash, err := bcrypt.GenerateFromPassword(pw, bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
