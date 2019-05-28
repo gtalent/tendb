@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 - 2019 gtalent2@gmail.com
+   Copyright 2019 gtalent2@gmail.com
 
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,35 +10,29 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-pg/pg"
-	"github.com/gtalent/tendb/churchdirectory"
-	"github.com/gtalent/tendb/db"
-	"github.com/gtalent/tendb/importers"
-	"golang.org/x/crypto/ssh/terminal"
-	"gopkg.in/codegangsta/cli.v1"
 	"net/http"
 	"os"
 	"syscall"
+
+	"github.com/gtalent/tendb/db"
+	"github.com/gtalent/tendb/importers"
+	"github.com/gtalent/tendb/web"
+	"github.com/urfave/cli"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
-func openDatabase() *pg.DB {
-	return pg.Connect(&pg.Options{
-		User:     "postgres",
-		Password: "postgres",
-		Database: "tendb",
-	})
-}
-
 func serve(c *cli.Context) error {
-	s := &http.Server{
-		Addr: "0.0.0.0:3000",
+	const addr = "0.0.0.0:2010"
+	web.SetupViews("/api/")
+	err := http.ListenAndServe(addr, nil)
+	if err != nil {
+		fmt.Println(err)
 	}
-	churchdirectory.SetupViews("/api/church_directory/", s)
-	return s.ListenAndServe()
+	return err
 }
 
 func migrate(c *cli.Context) error {
-	conn := openDatabase()
+	conn := db.OpenDatabase()
 	defer conn.Close()
 	err := db.Migrate(conn)
 	if err != nil {
@@ -48,7 +42,7 @@ func migrate(c *cli.Context) error {
 }
 
 func createUser(c *cli.Context) error {
-	conn := openDatabase()
+	conn := db.OpenDatabase()
 	defer conn.Close()
 	var u db.User
 
@@ -80,7 +74,7 @@ func createUser(c *cli.Context) error {
 }
 
 func importSK(c *cli.Context) error {
-	conn := openDatabase()
+	conn := db.OpenDatabase()
 	defer conn.Close()
 	path := c.String("path")
 	err := importers.ImportSK(conn, path)

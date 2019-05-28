@@ -5,9 +5,19 @@
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
+package web
 
-package main
+import (
+	"net/http"
+)
 
-type config struct {
-	Database string
+
+func persons(rw http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		personsGet(rw, r)
+	}
+}
+
+func personsGet(rw http.ResponseWriter, r *http.Request) {
 }

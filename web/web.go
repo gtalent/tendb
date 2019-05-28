@@ -6,8 +6,16 @@
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-package main
+package web
 
-type config struct {
-	Database string
+import (
+	"net/http"
+)
+
+func SetupViews(prefix string) {
+	if prefix[len(prefix)-1] != '/' {
+		prefix += "/"
+	}
+	http.HandleFunc(prefix+"persons/", persons)
+	http.HandleFunc(prefix+"users/", users)
 }
