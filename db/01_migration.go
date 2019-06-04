@@ -12,8 +12,9 @@ import (
 	"github.com/go-pg/migrations"
 )
 
-func init() {
-	const dir = "01_init"
+// this stuff HAS to be in a numbered migration file...
+
+func registerMigration(dir string) {
 	migrations.MustRegisterTx(func(db migrations.DB) error {
 		path := dir + "/up.sql"
 		sql, err := loadMigrationFile(path)
@@ -31,4 +32,14 @@ func init() {
 		_, err = db.Exec(sql)
 		return err
 	})
+}
+
+func init() {
+	l, err := ls("/")
+	if err != nil {
+		return
+	}
+	for _, v := range l {
+		registerMigration(v)
+	}
 }

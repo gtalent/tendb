@@ -8,14 +8,30 @@
 
 package db
 
-//go:generate go run ../assets_generate/assets_generate.go db
+//go:generate go run ../assets_generate/assets_generate.go db migrations
 
 import (
 	"io"
 
-	"github.com/go-pg/pg"
 	"github.com/go-pg/migrations"
+	"github.com/go-pg/pg"
 )
+
+func ls(dirPath string) ([]string, error) {
+	dir, err := assets.Open(dirPath)
+	if err != nil {
+		return nil, err
+	}
+	list, err := dir.Readdir(-1)
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, f := range list {
+		out = append(out, f.Name())
+	}
+	return out, nil
+}
 
 func loadMigrationFile(path string) (string, error) {
 	file, err := assets.Open(path)
