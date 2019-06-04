@@ -8,6 +8,8 @@
 
 package main
 
+import "github.com/go-pg/pg"
+
 type config struct {
-	Database string
+	DbOptions pg.Options `json:"db_options"`
 }

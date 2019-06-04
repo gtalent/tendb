@@ -4,7 +4,29 @@ import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 
-class Registration extends React.Component {
+interface RegistrationProps {
+}
+
+interface RegistrationState {
+	firstName: string;
+	lastName: string;
+	email: string;
+	password: string;
+	passwordConfirm: string;
+}
+
+class Registration extends React.Component<RegistrationProps, RegistrationState> {
+
+	constructor(props: RegistrationProps) {
+		super(props);
+		this.state = {
+			firstName: '',
+			lastName: '',
+			email: '',
+			password: '',
+			passwordConfirm: '',
+		};
+	}
 
 	makeHandler = (param: string) => {
 		return (event: any) => {
@@ -37,24 +59,35 @@ class Registration extends React.Component {
 
 	render() {
 		const style = {
-			height: 187,
+			margin: 'auto',
+			top: 0,
+			bottom: 0,
+			left: 0,
+			right: 0,
+			borderRadius: '3px',
+			position: 'absolute' as 'absolute',
+			height: 487,
 			width: 325,
-			display: 'inline-block',
-			textAlign: 'center',
+			display: 'flex',
+			flexWrap: 'wrap' as 'wrap',
+			justifyContent: 'center',
+			alignItems: 'center',
 		};
 		return (
 			<div style={style}>
-				<TextField label='First Name' onChange={this.makeHandler("firstName")}/>
-				<TextField label='Last Name' onChange={this.makeHandler("lastName")}/>
-				<TextField label='Birthday' onChange={this.makeHandler("birthday")} type='date' InputLabelProps={{shrink: true}}/>
-				<TextField label='Email' onChange={this.handleEmailChange}/>
+				<TextField label='First Name' style={{width: style.width}} value={this.state.firstName || ''} onChange={this.makeHandler("firstName")}/>
+				<TextField label='Last Name' style={{width: style.width}} onChange={this.makeHandler("lastName")}/>
+				<TextField label='Birthday' style={{width: style.width}} onChange={this.makeHandler("birthday")} type='date' InputLabelProps={{shrink: true}}/>
+				<TextField label='Email' style={{width: style.width}} onChange={this.handleEmailChange}/>
 				<Divider/>
 				<TextField label='Password'
+				           style={{width: style.width}}
 							  type='password'
 							  onChange={this.handlePasswordChange}
 				/>
 				<Divider/>
 				<TextField label='Confirm Password'
+				           style={{width: style.width}}
 							  type='confirmPassword'
 							  onChange={this.handlePasswordConfirmationChange}
 				/>
